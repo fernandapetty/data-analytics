@@ -1,0 +1,14 @@
+pandas
+numpy
+scikit-learn
+matplotlib
+seaborn
+joblib
+requests
+imbalanced-learn
+shap
+plotly
+openpyxl
+streamlit
+cloudflared
+nbformat>=4.2.0
