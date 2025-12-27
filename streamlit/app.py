@@ -57,7 +57,7 @@ st.caption(f"Modelo: {os.path.basename(MODEL_PATH)}")
 tab_pred,tab_ins=st.tabs(["🔮 Predição","📊 Insights"])
 
 with tab_pred:
-    st.subheader("Insira seus dados pessoais.")
+    st.subheader("Insira seus dados pessoais abaixo")
     cols=st.columns(1); vals={}
 
     for i,c in enumerate(num_cols):
