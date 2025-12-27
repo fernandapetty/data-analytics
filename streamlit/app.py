@@ -3,7 +3,7 @@ import os,json,numpy as np,pandas as pd,streamlit as st,joblib
 st.set_page_config(page_title="Predição de Obesidade",page_icon="🏥",layout="centered")
 st.title("🏥 Predição de Obesidade — App")
 
-ART_DIR="../model"
+ART_DIR="model"
 
 def find_model_and_meta():
     if not os.path.isdir(ART_DIR): return None,None
