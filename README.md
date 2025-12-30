@@ -1,3 +1,16 @@
+# Projeto Tech Challenge Fase 4 - Data Analytics FIAP
+
+Integrantes do grupo:
+
+Arthur Hieda Cunha
+arthurhcqh@gmail.com
+
+Fernanda Petty
+fernandapetty@gmail.com
+
+HENRIQUE SALES KOUYOUMDJIAN
+henri.sales82@gmail.com
+
 # Guia de Configuração e Execução do Projeto
 
 Siga os passos abaixo para preparar o ambiente, processar os dados e rodar a aplicação.
