@@ -1,31 +1,51 @@
-import os,json,numpy as np,pandas as pd,streamlit as st,joblib
+import seaborn as sns
+import os
+import json
+import numpy as np
+import pandas as pd
+import streamlit as st
+import joblib
+from sklearn.metrics import roc_curve
+import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Predição de Obesidade",page_icon="🏥",layout="centered")
+st.set_page_config(page_title="Predição de Obesidade",
+                   page_icon="🏥", layout="centered")
 st.title("🏥 Predição de Obesidade — App")
 
-ART_DIR="model"
+ART_DIR = "model"
+
 
 def find_model_and_meta():
-    if not os.path.isdir(ART_DIR): return None,None
-    joblibs=[os.path.join(ART_DIR,f) for f in os.listdir(ART_DIR) if f.endswith(".joblib")]
-    if not joblibs: return None,None
-    model_path=max(joblibs,key=os.path.getmtime)
-    finfo_path=os.path.join(ART_DIR,"feature_info.json")
-    if not os.path.exists(finfo_path): finfo_path=None
-    return model_path,finfo_path
+    if not os.path.isdir(ART_DIR):
+        return None, None
+    joblibs = [os.path.join(ART_DIR, f)
+               for f in os.listdir(ART_DIR) if f.endswith(".joblib")]
+    if not joblibs:
+        return None, None
+    model_path = max(joblibs, key=os.path.getmtime)
+    finfo_path = os.path.join(ART_DIR, "feature_info.json")
+    if not os.path.exists(finfo_path):
+        finfo_path = None
+    return model_path, finfo_path
 
-MODEL_PATH,FEATURE_INFO_PATH=find_model_and_meta()
+
+MODEL_PATH, FEATURE_INFO_PATH = find_model_and_meta()
 
 if MODEL_PATH is None or FEATURE_INFO_PATH is None:
-    st.error("Nao encontrei os artefatos em 'model/'. Preciso de 'best_model_*.joblib' e 'feature_info.json'."); st.stop()
+    st.error("Nao encontrei os artefatos em 'model/'. Preciso de 'best_model_*.joblib' e 'feature_info.json'.")
+    st.stop()
+
+
 @st.cache_resource
+def load_artifacts(model_path, finfo_path):
+    model = joblib.load(model_path)
+    with open(finfo_path, "r", encoding="utf-8") as f:
+        finfo = json.load(f)
+    return model, finfo
 
-def load_artifacts(model_path,finfo_path):
-    model=joblib.load(model_path)
-    with open(finfo_path,"r",encoding="utf-8") as f: finfo=json.load(f)
-    return model,finfo
 
-model,finfo=load_artifacts(MODEL_PATH,FEATURE_INFO_PATH)
+model, finfo = load_artifacts(MODEL_PATH, FEATURE_INFO_PATH)
+
 
 def getFieldName(value):
     # Definimos os correspondentes em um dicionário
@@ -50,60 +70,104 @@ def getFieldName(value):
     }
     return correspondencias.get(value, "Nome não encontrado no mapeamento: " + value)
 
-num_cols=finfo.get("num_cols",[]); cat_cols=finfo.get("cat_cols",[]); all_features=num_cols+cat_cols
+
+def getResultValue(value):
+    correspondencias = {
+        'Insufficient_Weight': 'Abaixo do peso',
+        'Normal_Weight': 'Peso normal',
+        'Overweight_Level_I': 'Sobrepeso I',
+        'Overweight_Level_II': 'Sobrepeso II',
+        'Obesity_Type_I': 'Obesidade I',
+        'Obesity_Type_II': 'Obesidade II',
+        'Obesity_Type_III': 'Obesidade III'
+    }
+    return correspondencias.get(value, "Resultado não encontrado no mapeamento: " + value)
+
+
+num_cols = finfo.get("num_cols", [])
+cat_cols = finfo.get("cat_cols", [])
+all_features = num_cols+cat_cols
 
 st.caption(f"Modelo: {os.path.basename(MODEL_PATH)}")
 
-tab_pred,tab_ins=st.tabs(["🔮 Predição","📊 Insights"])
+tab_pred, tab_ins = st.tabs(["🔮 Predição", "📊 Insights"])
 
 with tab_pred:
     st.subheader("Insira seus dados pessoais abaixo")
-    cols=st.columns(1); vals={}
+    cols = st.columns(1)
+    vals = {}
 
-    for i,c in enumerate(num_cols):
+    for i, c in enumerate(num_cols):
         with cols[0]:
-            default=0
-            if c=="Age": default=30
-            if c=="Height": default=1.70
-            if c=="Weight": default=70.0
-            if c=="BMI": continue
-            vals[c]=st.number_input(getFieldName(c),value=default)
+            default = 0
+            if c == "Age":
+                default = 30
+            if c == "Height":
+                default = 1.70
+            if c == "Weight":
+                default = 70.0
+            if c == "BMI":
+                continue
+            vals[c] = st.number_input(getFieldName(c), value=default)
 
-    for i,c in enumerate(cat_cols):
+    for i, c in enumerate(cat_cols):
         with cols[0]:
-            vals[c]=st.text_input(getFieldName(c),value="")
+            vals[c] = st.text_input(getFieldName(c), value="")
 
     if st.button("Efetuar análise preditiva"):
-        x=pd.DataFrame([vals],columns=all_features)
+        x = pd.DataFrame([vals], columns=all_features)
         try:
-            y_pred=model.predict(x)[0]
-            st.success(f"Predição: **{y_pred}**")
+            y_pred = model.predict(x)[0]
+            st.success(
+                f"Grau de obesidade previsto: **{getResultValue(y_pred)}**")
             try:
-                proba=model.predict_proba(x)[0]; classes=model.classes_
+                proba = model.predict_proba(x)[0]
+                classes = model.classes_
                 st.write("Confiança (top 3):")
-                top=np.argsort(proba)[::-1][:3]
-                for i in top: st.write(f"- {classes[i]}: {proba[i]:.2%}")
-            except Exception: pass
+                top = np.argsort(proba)[::-1][:3]
+                for i in top:
+                    st.write(f"- {classes[i]}: {proba[i]:.2%}")
+            except Exception:
+                pass
         except Exception as e:
             st.error(f"Erro ao prever: {e}")
 
-    st.markdown("---")
-    st.subheader("Lote (CSV)")
-    up=st.file_uploader("Envie CSV com as colunas de entrada",type=["csv"])
-
-    if up is not None:
-        df_in=pd.read_csv(up); missing=[c for c in all_features if c not in df_in.columns]
-        if missing: st.warning(f"Colunas faltantes no CSV: {missing}")
-        try:
-            cols_used=[c for c in all_features if c in df_in.columns]
-            preds=model.predict(df_in[cols_used]); out=df_in.copy(); out["prediction"]=preds
-            st.dataframe(out.head(50))
-            st.download_button("Baixar CSV", out.to_csv(index=False).encode("utf-8"), file_name="predicoes.csv", mime="text/csv")
-        except Exception as e:
-            st.error(f"Erro no lote: {e}")
-
 with tab_ins:
-    st.subheader("Features do modelo")
-    st.write("Numericas:", num_cols)
-    st.write("Categoricas:", cat_cols)
-    st.info("Para graficos detalhados e SHAP utilize este notebook.")
+    st.subheader("Análises realizadas no conjunto de dados coletados\n\n")
+
+    df = pd.read_csv('data/dados_tratados.csv', sep=';')
+
+    obesity_counts = df['Obesity'].value_counts()
+    labels = obesity_counts.index
+    sizes = obesity_counts.values
+    percentages = (sizes / sizes.sum()) * 100
+
+    # 1. Capture a figura em uma variável (fig)
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    ax.pie(
+        sizes,
+        labels=labels,
+        autopct='%1.1f%%',
+        startangle=140,
+        colors=plt.cm.viridis(np.linspace(0, 1, len(labels))),
+        wedgeprops={'edgecolor': 'black', 'linewidth': 1}
+    )
+
+    ax.set_title('Distribuição dos Níveis de Obesidade (Gráfico de Pizza)')
+    ax.axis('equal')
+
+    # 2. Em vez de plt.show(), use o comando do streamlit
+    st.pyplot(fig)
+
+    # Criando a figura e os eixos
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    # Gerando o boxplot (passando o 'ax' para o Seaborn saber onde desenhar)
+    sns.boxplot(data=df, x='Gender', y='Weight', hue='Obesity', ax=ax)
+
+    # Configurando título e labels
+    ax.set_title('Distribuição de Peso por Gênero e Nível de Obesidade')
+
+    # Exibindo no Streamlit
+    st.pyplot(fig)
