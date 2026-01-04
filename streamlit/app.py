@@ -135,6 +135,10 @@ with tab_pred:
 with tab_ins:
     st.subheader("Análises realizadas no conjunto de dados coletados\n\n")
 
+    st.markdown("### 1. Distribuição dos Níveis de Obesidade\n\n")
+
+    st.markdown("Mais de 70% da população está com sobrepeso ou obesidade devido ao estilo de vida moderno, caracterizado por dietas ricas em calorias e sedentarismo.")
+
     df = pd.read_csv('data/dados_tratados.csv', sep=';')
 
     obesity_counts = df['Obesity'].value_counts()
@@ -154,11 +158,36 @@ with tab_ins:
         wedgeprops={'edgecolor': 'black', 'linewidth': 1}
     )
 
-    ax.set_title('Distribuição dos Níveis de Obesidade (Gráfico de Pizza)')
+    ax.set_title(
+        'Distribuição dos Níveis de Obesidade na Amostra de Dados', pad=20)
     ax.axis('equal')
 
-    # 2. Em vez de plt.show(), use o comando do streamlit
     st.pyplot(fig)
+
+    st.markdown(
+        "### 2. Distribuição de Peso por Gênero e Nível de Obesidade\n\n")
+
+    st.markdown("""
+    Este gráfico de caixa (*boxplot*) analisa a relação entre o **peso**, o **gênero** e as **classificações de obesidade**. 
+    Abaixo estão os pontos fundamentais identificados:
+    """)
+
+    # Organizando em colunas para melhor leitura
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("1. Diferenças por Gênero")
+        st.write("""
+        * **Obesidade Tipo III:** Exclusiva do grupo feminino nesta amostra, atingindo os maiores picos de peso (acima de 160kg).
+        * **Obesidade Tipo II:** Os homens nesta categoria apresentam pesos significativamente maiores (110-130kg) do que as mulheres no mesmo nível.
+        """)
+
+    with col2:
+        st.subheader("2. Progressão e Variabilidade")
+        st.write("""
+        * **Sobreposição:** As faixas de peso normal e sobrepeso nível I e II se misturam, indicando que o peso bruto não define a categoria sozinho.
+        * **Dispersão:** O grupo 'Obesity Type III' tem a maior variabilidade, mostrando que pessoas com a mesma classificação podem ter pesos muito distantes.
+        """)
 
     # Criando a figura e os eixos
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -171,3 +200,18 @@ with tab_ins:
 
     # Exibindo no Streamlit
     st.pyplot(fig)
+
+    # Tabela comparativa usando Expander para não poluir a tela
+    with st.expander("Ver Resumo das Categorias"):
+        st.table({
+            "Categoria": ["Insufficient Weight", "Normal / Overweight", "Obesity Type II", "Obesity Type III"],
+            "Observação Principal": [
+                "Menores pesos da amostra (abaixo de 60kg).",
+                "Faixas intermediárias com alta similaridade entre gêneros.",
+                "Homens pesam mais que mulheres nesta categoria.",
+                "Picos de peso da amostra; observada apenas no grupo feminino."
+            ]
+        })
+
+    # Mensagem final ou Insight
+    st.info("**Conclusão:** O gênero influencia drasticamente como os níveis de obesidade são distribuídos em relação ao peso corporal total.")
