@@ -8,12 +8,11 @@ import joblib
 from sklearn.metrics import roc_curve
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="Predição de Obesidade",
-                   page_icon="🏥", layout="centered")
-st.title("🏥 Predição de Obesidade — App")
+st.set_page_config(page_title="Predição de Risco de Defasagem",
+                   page_icon="🎓", layout="centered")
+st.title("🎓 Predição de Risco de Defasagem — App")
 
-ART_DIR = "model"
-
+ART_DIR = "/model"
 
 def find_model_and_meta():
     if not os.path.isdir(ART_DIR):
@@ -46,40 +45,18 @@ def load_artifacts(model_path, finfo_path):
 
 model, finfo = load_artifacts(MODEL_PATH, FEATURE_INFO_PATH)
 
-
 def getFieldName(value):
     # Definimos os correspondentes em um dicionário
     correspondencias = {
-        'Height': 'Altura',
-        'Age': 'Idade',
-        'Weight': 'Peso',
-        'Gender': 'Gênero. Valores: Female, Male',
-        'family_history': 'Existe histórico familiar de excesso de peso? Valores: yes (Sim), no (Não)',
-        'FAVC': 'Consume frequentemente alimentos muito calóricos? Valores: yes (Sim), no (Não)',
-        'FCVC': 'Consome com frequência vegetais nas refeições? Valores (escala 1–3): 1 raramente, 2 às vezes, 3 sempre.',
-        'NCP': 'Número de refeições principais por dia. Valores (escala 1–4): 1 uma refeição, 2 duas, 3 três, 4 quatro ou mais.',
-        'CAEC': 'Consume lanches/comes entre as refeições? Valores: no (não consome), Sometimes (às vezes), Frequently (frequentemente), Always (sempre).',
-        'SMOKE': 'Hábito de fumar. Valores: yes (fuma), no (não fuma).',
-        'CH2O': 'Consumo diário de água. Valores (escala 1–3): 1 < 1 L/dia, 2 1–2 L/dia, 3 > 2 L/dia.',
-        'SCC': 'Monitora a ingestão calórica diária? Valores: yes (sim), no (não).',
-        'FAF': 'Frequência semanal de atividade física. Valores (escala 0–3): 0 nenhuma, 1 ~1–2×/sem, 2 ~3–4×/sem, 3 5×/sem ou mais.',
-        'TUE': 'Tempo diário usando dispositivos eletrônicos. Valores (escala 0–2): 0 ~0–2 h/dia, 1 ~3–5 h/dia, 2 > 5 h/dia.',
-        'CALC': 'Consumo de bebida alcoólica. Valores: no (não bebe), Sometimes (às vezes), Frequently (frequentemente), Always (sempre).',
-        'MTRANS': 'Qual o Meio de transporte habitual? Valores: Automobile (carro), Motorbike (moto), Bike (bicicleta), Public_Transportation (transporte público), Walking (a pé).',
-        'Obesity': 'Classe de peso corporal. Valores: Insufficient_Weight (abaixo do peso), Normal_Weight (peso normal), Overweight_Level_I (sobrepeso I), Overweight_Level_II (sobrepeso II), Obesity_Type',
+        'Height': 'Altura'
     }
     return correspondencias.get(value, "Nome não encontrado no mapeamento: " + value)
 
 
 def getResultValue(value):
     correspondencias = {
-        'Insufficient_Weight': 'Abaixo do peso',
-        'Normal_Weight': 'Peso normal',
-        'Overweight_Level_I': 'Sobrepeso I',
-        'Overweight_Level_II': 'Sobrepeso II',
-        'Obesity_Type_I': 'Obesidade I',
-        'Obesity_Type_II': 'Obesidade II',
-        'Obesity_Type_III': 'Obesidade III'
+        '0': 'Defasagem leve',
+        '1': 'Defasagem moderada',
     }
     return correspondencias.get(value, "Resultado não encontrado no mapeamento: " + value)
 
@@ -90,7 +67,7 @@ all_features = num_cols+cat_cols
 
 st.caption(f"Modelo: {os.path.basename(MODEL_PATH)}")
 
-tab_pred, tab_ins = st.tabs(["🔮 Predição", "📊 Insights"])
+tab_pred, tab_ins = st.tabs(["🔮 Predição"])
 
 with tab_pred:
     st.subheader("Insira seus dados pessoais abaixo")
@@ -119,7 +96,7 @@ with tab_pred:
         try:
             y_pred = model.predict(x)[0]
             st.success(
-                f"Grau de obesidade previsto: **{getResultValue(y_pred)}**")
+                f"Risco de Defasagem: **{getResultValue(y_pred)}**")
             try:
                 proba = model.predict_proba(x)[0]
                 classes = model.classes_
@@ -131,87 +108,3 @@ with tab_pred:
                 pass
         except Exception as e:
             st.error(f"Erro ao prever: {e}")
-
-with tab_ins:
-    st.subheader("Análises realizadas no conjunto de dados coletados\n\n")
-
-    st.markdown("### 1. Distribuição dos Níveis de Obesidade\n\n")
-
-    st.markdown("Mais de 70% da população está com sobrepeso ou obesidade devido ao estilo de vida moderno, caracterizado por dietas ricas em calorias e sedentarismo.")
-
-    df = pd.read_csv('data/dados_tratados.csv', sep=';')
-
-    obesity_counts = df['Obesity'].value_counts()
-    labels = obesity_counts.index
-    sizes = obesity_counts.values
-    percentages = (sizes / sizes.sum()) * 100
-
-    # 1. Capture a figura em uma variável (fig)
-    fig, ax = plt.subplots(figsize=(10, 8))
-
-    ax.pie(
-        sizes,
-        labels=labels,
-        autopct='%1.1f%%',
-        startangle=140,
-        colors=plt.cm.viridis(np.linspace(0, 1, len(labels))),
-        wedgeprops={'edgecolor': 'black', 'linewidth': 1}
-    )
-
-    ax.set_title(
-        'Distribuição dos Níveis de Obesidade na Amostra de Dados', pad=20)
-    ax.axis('equal')
-
-    st.pyplot(fig)
-
-    st.markdown(
-        "### 2. Distribuição de Peso por Gênero e Nível de Obesidade\n\n")
-
-    st.markdown("""
-    Este gráfico de caixa (*boxplot*) analisa a relação entre o **peso**, o **gênero** e as **classificações de obesidade**. 
-    Abaixo estão os pontos fundamentais identificados:
-    """)
-
-    # Organizando em colunas para melhor leitura
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("1. Diferenças por Gênero")
-        st.write("""
-        * **Obesidade Tipo III:** Exclusiva do grupo feminino nesta amostra, atingindo os maiores picos de peso (acima de 160kg).
-        * **Obesidade Tipo II:** Os homens nesta categoria apresentam pesos significativamente maiores (110-130kg) do que as mulheres no mesmo nível.
-        """)
-
-    with col2:
-        st.subheader("2. Progressão e Variabilidade")
-        st.write("""
-        * **Sobreposição:** As faixas de peso normal e sobrepeso nível I e II se misturam, indicando que o peso bruto não define a categoria sozinho.
-        * **Dispersão:** O grupo 'Obesity Type III' tem a maior variabilidade, mostrando que pessoas com a mesma classificação podem ter pesos muito distantes.
-        """)
-
-    # Criando a figura e os eixos
-    fig, ax = plt.subplots(figsize=(8, 6))
-
-    # Gerando o boxplot (passando o 'ax' para o Seaborn saber onde desenhar)
-    sns.boxplot(data=df, x='Gender', y='Weight', hue='Obesity', ax=ax)
-
-    # Configurando título e labels
-    ax.set_title('Distribuição de Peso por Gênero e Nível de Obesidade')
-
-    # Exibindo no Streamlit
-    st.pyplot(fig)
-
-    # Tabela comparativa usando Expander para não poluir a tela
-    with st.expander("Ver Resumo das Categorias"):
-        st.table({
-            "Categoria": ["Insufficient Weight", "Normal / Overweight", "Obesity Type II", "Obesity Type III"],
-            "Observação Principal": [
-                "Menores pesos da amostra (abaixo de 60kg).",
-                "Faixas intermediárias com alta similaridade entre gêneros.",
-                "Homens pesam mais que mulheres nesta categoria.",
-                "Picos de peso da amostra; observada apenas no grupo feminino."
-            ]
-        })
-
-    # Mensagem final ou Insight
-    st.info("**Conclusão:** O gênero influencia drasticamente como os níveis de obesidade são distribuídos em relação ao peso corporal total.")

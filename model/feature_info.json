@@ -1,0 +1,37 @@
+{
+  "num_cols": [
+    "ano_ref",
+    "Ano ingresso",
+    "IAA",
+    "IEG",
+    "IPS",
+    "IPP",
+    "IDA",
+    "IPV",
+    "INDE",
+    "IAN",
+    "Mat",
+    "Por",
+    "Ing",
+    "Idade"
+  ],
+  "cat_cols": [
+    "Fase",
+    "Turma",
+    "Gênero",
+    "Instituicao_Ensino",
+    "Pedra 20",
+    "Pedra 21",
+    "Pedra 22",
+    "Pedra 23",
+    "Pedra 2023",
+    "Pedra 2024",
+    "Escola",
+    "Ativo/ Inativo"
+  ],
+  "target": "risco",
+  "classes": [
+    0,
+    1
+  ]
+}
