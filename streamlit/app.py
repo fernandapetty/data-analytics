@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Predição de Risco de Defasagem",
                    page_icon="🎓", layout="centered")
+
 st.title("🎓 Predição de Risco de Defasagem")
 
 ART_DIR = "model"
@@ -67,39 +68,37 @@ all_features = num_cols+cat_cols
 
 st.caption(f"Modelo: {os.path.basename(MODEL_PATH)}")
 
-tab_pred, tab_ins = st.tabs(["🔮 Predição"])
+st.subheader("Insira seus dados pessoais abaixo")
+cols = st.columns(1)
+vals = {}
 
-with tab_pred:
-    st.subheader("Insira seus dados pessoais abaixo")
-    cols = st.columns(1)
-    vals = {}
+for i, c in enumerate(num_cols):
+    with cols[0]:
+        default = 0
+        if c == "Age":
+            default = 30
+        if c == "Height":
+            default = 1.70
+        if c == "Weight":
+            default = 70.0
+        if c == "BMI":
+            continue
+    vals[c] = st.number_input(getFieldName(c), value=default)
 
-    for i, c in enumerate(num_cols):
-        with cols[0]:
-            default = 0
-            if c == "Age":
-                default = 30
-            if c == "Height":
-                default = 1.70
-            if c == "Weight":
-                default = 70.0
-            if c == "BMI":
-                continue
-            vals[c] = st.number_input(getFieldName(c), value=default)
-
-    for i, c in enumerate(cat_cols):
-        with cols[0]:
-            vals[c] = st.text_input(getFieldName(c), value="")
+for i, c in enumerate(cat_cols):
+    with cols[0]:
+        vals[c] = st.text_input(getFieldName(c), value="")
 
 
-    if st.button("Efetuar análise preditiva"):
-        x = pd.DataFrame([vals], columns=all_features)
-        try:
-            y_pred = model.predict(x)[0]
-            if y_pred > 0.7:
-                st.error("⚠️ Aluno em alto risco de defasagem!")
-            else:
-                st.success(
-                    f"Risco de Defasagem: **{getResultValue(y_pred)}**")
-        except Exception as e:
-            st.error(f"Erro ao prever: {e}")
+if st.button("Efetuar análise preditiva"):
+    x = pd.DataFrame([vals], columns=all_features)
+try:
+    y_pred = model.predict(x)[0]
+    if y_pred > 0.7:
+        st.error("⚠️ Aluno em alto risco de defasagem!")
+    else:
+        st.success(
+            f"Risco de Defasagem: **{getResultValue(y_pred)}**")
+        
+except Exception as e:
+    st.error(f"Erro ao prever: {e}")
