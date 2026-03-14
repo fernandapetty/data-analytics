@@ -9,6 +9,6 @@ imbalanced-learn
 shap
 plotly
 openpyxl
-streamlit
+streamlit>=1.30.0
 cloudflared
 nbformat>=4.2.0
