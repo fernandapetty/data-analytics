@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Predição de Risco de Defasagem",
                    page_icon="🎓", layout="centered")
-st.title("🎓 Predição de Risco de Defasagem — App")
+st.title("🎓 Predição de Risco de Defasagem")
 
 ART_DIR = "model"
 
@@ -91,20 +91,15 @@ with tab_pred:
         with cols[0]:
             vals[c] = st.text_input(getFieldName(c), value="")
 
+
     if st.button("Efetuar análise preditiva"):
         x = pd.DataFrame([vals], columns=all_features)
         try:
             y_pred = model.predict(x)[0]
-            st.success(
-                f"Risco de Defasagem: **{getResultValue(y_pred)}**")
-            try:
-                proba = model.predict_proba(x)[0]
-                classes = model.classes_
-                st.write("Confiança (top 3):")
-                top = np.argsort(proba)[::-1][:3]
-                for i in top:
-                    st.write(f"- {classes[i]}: {proba[i]:.2%}")
-            except Exception:
-                pass
+            if y_pred > 0.7:
+                st.error("⚠️ Aluno em alto risco de defasagem!")
+            else:
+                st.success(
+                    f"Risco de Defasagem: **{getResultValue(y_pred)}**")
         except Exception as e:
             st.error(f"Erro ao prever: {e}")
