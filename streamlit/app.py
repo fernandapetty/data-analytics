@@ -49,7 +49,22 @@ model, finfo = load_artifacts(MODEL_PATH, FEATURE_INFO_PATH)
 def getFieldName(value):
     # Definimos os correspondentes em um dicionário
     correspondencias = {
-        'Height': 'Altura'
+        'idade': 'Idade',
+        'genero': 'Gênero',
+        'fase_ideal': 'Fase Ideal',
+        'mat': 'Matemática (MAT)',
+        'por': 'Português (POR)',
+        'ing': 'Inglês (ING)',
+        'iaa': 'Ind. Autoavaliação (IAA)',
+        'ieg': 'Ind. Engajamento (IEG)',
+        'inde_2024': 'INDE Atual',
+        'ips': 'Ind. Psicossocial (IPS)',
+        'ipp': 'Ind. Psicopedagógico (IPP)',
+        'inde_2022': 'INDE de 2 anos atrás',
+        'inde_2023': 'INDE do ano passado',
+        'ida': 'Indicador de Desempenho Acad. (IDA)',
+        'ipv': 'Indicador de Ponto de Virada (IPV)',
+        'n_av': 'Número de Avaliações'
     }
     return correspondencias.get(value, "Nome não encontrado no mapeamento: " + value)
 
@@ -68,7 +83,7 @@ all_features = num_cols+cat_cols
 
 st.caption(f"Modelo: {os.path.basename(MODEL_PATH)}")
 
-st.subheader("Insira seus dados pessoais abaixo")
+st.subheader("Insira os dados do aluno para análise preditiva:")
 cols = st.columns(1)
 vals = {}
 
