@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="Predição de Risco de Defasagem",
                    page_icon="🎓", layout="centered")
 
-st.title("🎓 Predição de Risco de Defasagem")
+st.title("🎓 Análise preditiva de Defasagem Educacional")
 
 ART_DIR = "model"
 
