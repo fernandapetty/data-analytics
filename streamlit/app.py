@@ -49,30 +49,28 @@ model, finfo = load_artifacts(MODEL_PATH, FEATURE_INFO_PATH)
 def getFieldName(value):
     # Definimos os correspondentes em um dicionário
     correspondencias = {
-        'idade': 'Idade',
-        'genero': 'Gênero',
-        'fase_ideal': 'Fase Ideal',
-        'mat': 'Matemática (MAT)',
-        'por': 'Português (POR)',
-        'ing': 'Inglês (ING)',
-        'iaa': 'Ind. Autoavaliação (IAA)',
-        'ieg': 'Ind. Engajamento (IEG)',
-        'inde_2024': 'INDE Atual',
-        'ips': 'Ind. Psicossocial (IPS)',
-        'ipp': 'Ind. Psicopedagógico (IPP)',
-        'inde_2022': 'INDE de 2 anos atrás',
-        'inde_2023': 'INDE do ano passado',
-        'ida': 'Indicador de Desempenho Acad. (IDA)',
-        'ipv': 'Indicador de Ponto de Virada (IPV)',
-        'n_av': 'Número de Avaliações'
+        'Idade': 'Idade',
+        'Gênero': 'Gênero',
+        'Fase': 'Fase Atual',
+        'INDE': 'INDE Atual',
+        'IAN': 'Ind. Adequação de Nível (IAN)',
+        'Mat': 'Matemática (MAT)',
+        'Por': 'Português (POR)',
+        'Ing': 'Inglês (ING)',
+        'IAA': 'Ind. Autoavaliação (IAA)',
+        'IEG': 'Ind. Engajamento (IEG)',
+        'IPS': 'Ind. Psicossocial (IPS)',
+        'IPP': 'Ind. Psicopedagógico (IPP)',
+        'IDA': 'Indicador de Desempenho Acad. (IDA)',
+        'IPV': 'Indicador de Ponto de Virada (IPV)'
     }
     return correspondencias.get(value, "Nome não encontrado no mapeamento: " + value)
 
 
 def getResultValue(value):
     correspondencias = {
-        '0': 'Defasagem leve',
-        '1': 'Defasagem moderada',
+        '0': 'Aluno com baixo risco de defasagem',
+        '1': 'Aluno com alto risco de defasagem',
     }
     return correspondencias.get(value, "Resultado não encontrado no mapeamento: " + value)
 
@@ -90,30 +88,56 @@ vals = {}
 for i, c in enumerate(num_cols):
     with cols[0]:
         default = 0
-        if c == "Age":
-            default = 30
-        if c == "Height":
-            default = 1.70
-        if c == "Weight":
-            default = 70.0
-        if c == "BMI":
-            continue
+        if c == "Idade":
+            default = 10
+        elif c in ["Mat", "Por", "Ing"]:
+            default = 5
+        elif c in ["IAA", "IEG", "IPS", "IPP", "IDA", "IPV"]:
+            default = 0.5
     vals[c] = st.number_input(getFieldName(c), value=default)
 
-for i, c in enumerate(cat_cols):
-    with cols[0]:
+# No loop de colunas categóricas (cat_cols)
+for c in cat_cols:
+    if c == "Gênero":
+        vals[c] = st.selectbox(getFieldName(c), options=[
+                               "Masculino", "Feminino"])
+    elif c == "Fase":
+        vals[c] = st.selectbox(getFieldName(c), options=[
+                               "ALFA", "Fase 1", "Fase 2", "Fase 3", "Fase 4", "Fase 5", "Fase 6", "Fase 7", "Fase 8"])
+    else:
         vals[c] = st.text_input(getFieldName(c), value="")
+
+with st.expander("ℹ️ Entenda os Indicadores"):
+    st.write("""
+    - **IAN:** Indicador de Adequação de Nível.
+    - **IDA:** Indicador de Desempenho Acadêmico.
+    - **IEG:** Indicador de Engajamento.
+    - **IPV:** Ponto de Virada (indicador de maturidade e esforço).
+    """)
 
 
 if st.button("Efetuar análise preditiva"):
     x = pd.DataFrame([vals], columns=all_features)
-try:
-    y_pred = model.predict(x)[0]
-    if y_pred > 0.7:
-        st.error("⚠️ Aluno em alto risco de defasagem!")
-    else:
-        st.success(
-            f"Risco de Defasagem: **{getResultValue(y_pred)}**")
-        
-except Exception as e:
-    st.error(f"Erro ao prever: {e}")
+    try:
+        # Pega a probabilidade da classe 1 (alto risco)
+        y_prob = model.predict_proba(x)[0][1]
+        y_pred = model.predict(x)[0]
+
+        # Interface visual com métricas
+        st.subheader("Resultado da Análise")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric("Nível de Risco", f"{y_prob:.1%}")
+
+        with col2:
+            status = "🔴 ALTO RISCO" if y_prob > 0.5 else "🟢 BAIXO RISCO"
+            st.write(f"**Status:** {status}")
+
+        if y_prob > 0.7:
+            st.warning(
+                "⚠️ Este aluno apresenta indicadores críticos de defasagem. Recomenda-se intervenção psicopedagógica imediata.")
+
+    except Exception as e:
+        st.error(f"Erro ao prever: {e}")
+    
