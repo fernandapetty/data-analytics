@@ -93,7 +93,7 @@ for i, c in enumerate(num_cols):
         elif c in ["Mat", "Por", "Ing"]:
             default = 5
         elif c in ["IAA", "IEG", "IPS", "IPP", "IDA", "IPV"]:
-            default = 0.5
+            default = 6.0
     vals[c] = st.number_input(getFieldName(c), value=default)
 
 # No loop de colunas categóricas (cat_cols)
