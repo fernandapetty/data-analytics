@@ -131,7 +131,7 @@ if st.button("Efetuar análise preditiva"):
             st.metric("Nível de Risco", f"{y_prob:.1%}")
 
         with col2:
-            status = "🔴 ALTO RISCO" if y_prob > 0.3 else "🟢 BAIXO RISCO"
+            status = "🔴 ALTO RISCO DE DEFASAGEM" if y_prob > 0.3 else "🟢 BAIXO RISCO DE DEFASAGEM"
             st.write(f"**Status:** {status}")
 
         if y_prob > 0.5:
