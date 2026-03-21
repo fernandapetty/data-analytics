@@ -131,10 +131,10 @@ if st.button("Efetuar análise preditiva"):
             st.metric("Nível de Risco", f"{y_prob:.1%}")
 
         with col2:
-            status = "🔴 ALTO RISCO" if y_prob > 0.5 else "🟢 BAIXO RISCO"
+            status = "🔴 ALTO RISCO" if y_prob > 5 else "🟢 BAIXO RISCO"
             st.write(f"**Status:** {status}")
 
-        if y_prob > 0.7:
+        if y_prob > 7:
             st.warning(
                 "⚠️ Este aluno apresenta indicadores críticos de defasagem. Recomenda-se intervenção psicopedagógica imediata.")
 
