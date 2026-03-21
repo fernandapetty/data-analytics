@@ -1,4 +1,5 @@
 # Relatório — Tech Challenge (Passos)
 - Tamanho da base: 3030
-- Acurácia (estimada aqui): 0.8296
-- Principais variáveis: BMI, hábitos (FAVC, CAEC, CH2O, FAF), histórico familiar, sexo, idade
+- Acurácia (teste): 0.8296
+- Principais variáveis analisadas: IAN, IDA, IEG, IPS, IPP, IPV, INDE
+- Modelo de risco: pipeline com RandomForest (salvo em model/)
