@@ -118,22 +118,23 @@ with st.expander("ℹ️ Entenda os Indicadores"):
 if st.button("Efetuar análise preditiva"):
     x = pd.DataFrame([vals], columns=all_features)
     try:
+
         # Pega a probabilidade da classe 1 (alto risco)
-        y_prob = model.predict_proba(x)[0][1]
-        y_pred = model.predict(x)[0]
+        probability = model.predict_proba(x)
+        proba_risco = probability[0][1]
 
         # Interface visual com métricas
         st.subheader("Resultado da Análise")
         col1, col2 = st.columns(2)
 
         with col1:
-            st.metric("Nível de Risco", f"{y_prob:.1%}")
+            st.metric("Nível de Risco", f"{proba_risco * 100:.1f}%")
 
         with col2:
-            status = "🔴 ALTO RISCO DE DEFASAGEM" if y_prob > 0.3 else "🟢 BAIXO RISCO DE DEFASAGEM"
+            status = "🔴 ALTO RISCO DE DEFASAGEM" if proba_risco > 0.3 else "🟢 BAIXO RISCO DE DEFASAGEM"
             st.write(f"**Status:** {status}")
 
-        if y_prob > 0.5:
+        if proba_risco > 0.5:
             st.warning(
                 "⚠️ Este aluno apresenta indicadores críticos de defasagem. Recomenda-se intervenção psicopedagógica imediata.")
 
